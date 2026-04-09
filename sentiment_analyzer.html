@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Sentiment Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: all 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        
+        .result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .positive {
+            background: linear-gradient(45deg, #11998e, #38ef7d);
+            color: white;
+        }
+        
+        .negative {
+            background: linear-gradient(45deg, #fc466b, #3f5efb);
+            color: white;
+        }
+        
+        .neutral {
+            background: linear-gradient(45deg, #ffecd2, #fcb69f);
+            color: #333;
+        }
+        
+        .confidence {
+            font-size: 14px;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .examples h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .example-btn {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: auto;
+        }
+        
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .loader {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Sentiment Analyzer</h1>
+        
+        <div class="input-section">
+            <textarea id="textInput" placeholder="Enter customer feedback, review, or any text to analyze sentiment..."></textarea>
+            <button onclick="analyzeSentiment()" id="analyzeBtn">Analyze Sentiment</button>
+        </div>
+        
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <p>Analyzing sentiment...</p>
+        </div>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="examples">
+            <h3>Try these examples:</h3>
+            <button class="example-btn" onclick="useExample('This product is amazing! Great quality and fast delivery.')">Positive Review</button>
+            <button class="example-btn" onclick="useExample('Terrible experience. Product broke after one day.')">Negative Review</button>
+            <button class="example-btn" onclick="useExample('The product is okay, nothing special but does the job.')">Neutral Review</button>
+            <button class="example-btn" onclick="useExample('Love this! Best purchase ever made. Highly recommend!')">Very Positive</button>
+        </div>
+    </div>
+
+    <script>
+        // Simulated AI sentiment analysis (in real implementation, this would call Hugging Face API)
+        function simulateAIAnalysis(text) {
+            // Simple keyword-based analysis for demo (real AI would be much more sophisticated)
+            const positiveWords = ['amazing', 'great', 'excellent', 'love', 'fantastic', 'wonderful', 'best', 'perfect', 'outstanding', 'recommend'];
+            const negativeWords = ['terrible', 'awful', 'bad', 'hate', 'worst', 'horrible', 'disappointing', 'broke', 'useless', 'waste'];
+            
+            const lowerText = text.toLowerCase();
+            let positiveScore = 0;
+            let negativeScore = 0;
+            
+            positiveWords.forEach(word => {
+                if (lowerText.includes(word)) positiveScore++;
+            });
+            
+            negativeWords.forEach(word => {
+                if (lowerText.includes(word)) negativeScore++;
+            });
+            
+            // Calculate sentiment
+            if (positiveScore > negativeScore) {
+                return {
+                    label: 'POSITIVE',
+                    confidence: Math.min(0.7 + (positiveScore * 0.1), 0.99)
+                };
+            } else if (negativeScore > positiveScore) {
+                return {
+                    label: 'NEGATIVE',
+                    confidence: Math.min(0.7 + (negativeScore * 0.1), 0.99)
+                };
+            } else {
+                return {
+                    label: 'NEUTRAL',
+                    confidence: 0.6 + Math.random() * 0.2
+                };
+            }
+        }
+        
+        async function analyzeSentiment() {
+            const text = document.getElementById('textInput').value.trim();
+            
+            if (!text) {
+                alert('Please enter some text to analyze!');
+                return;
+            }
+            
+            const btn = document.getElementById('analyzeBtn');
+            const loader = document.getElementById('loader');
+            const result = document.getElementById('result');
+            
+            // Show loading state
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+            loader.style.display = 'block';
+            result.classList.remove('show');
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            try {
+                // In real implementation, you'd call Hugging Face API here:
+                /*
+                const response = await fetch('https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment-latest', {
+                    headers: { Authorization: `Bearer YOUR_API_KEY` },
+                    method: 'POST',
+                    body: JSON.stringify({ inputs: text })
+                });
+                const data = await response.json();
+                */
+                
+                // For demo, we'll use our simulated analysis
+                const analysis = simulateAIAnalysis(text);
+                
+                displayResult(analysis);
+                
+            } catch (error) {
+                result.innerHTML = `
+                    <div style="background: #ffebee; color: #c62828; padding: 20px; border-radius: 12px;">
+                        <strong>Error:</strong> Unable to analyze sentiment. Please try again.
+                    </div>
+                `;
+                result.classList.add('show');
+            }
+            
+            // Reset button
+            btn.disabled = false;
+            btn.textContent = 'Analyze Sentiment';
+            loader.style.display = 'none';
+        }
+        
+        function displayResult(analysis) {
+            const result = document.getElementById('result');
+            const sentiment = analysis.label.toLowerCase();
+            const confidence = (analysis.confidence * 100).toFixed(1);
+            
+            const emoji = {
+                positive: '😊',
+                negative: '😞',
+                neutral: '😐'
+            };
+            
+            result.className = `result ${sentiment}`;
+            result.innerHTML = `
+                <h2>${emoji[sentiment]} ${analysis.label}</h2>
+                <p>The AI detected <strong>${sentiment}</strong> sentiment in your text.</p>
+                <div class="confidence">Confidence: ${confidence}%</div>
+            `;
+            
+            result.classList.add('show');
+        }
+        
+        function useExample(text) {
+            document.getElementById('textInput').value = text;
+            analyzeSentiment();
+        }
+        
+        // Allow Enter key to trigger analysis
+        document.getElementById('textInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                analyzeSentiment();
+            }
+        });
+    </script>
+</body>
+</html>
