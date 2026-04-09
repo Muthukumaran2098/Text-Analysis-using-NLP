@@ -90,9 +90,3 @@ Open `sentiment_analyzer.html` directly in your browser — no server required.
 
 **Muthukumaran P**  - Data Scientist  
 [GitHub](https://github.com/Muthukumaran2098)
-
----
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
